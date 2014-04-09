@@ -1,7 +1,14 @@
 import sys
 import random
+import math
 
 size = 4
+ref = [
+    [1, 2, 2, 1],
+    [2, 3, 3, 2],
+    [2, 3, 3, 2],
+    [1, 2, 2, 1],
+]
 
 def swipeUp(board):
 	res = transform(zip(*board))
@@ -38,10 +45,11 @@ def transform(board):
 		res.append(sub)
 	return res
 
-def cal(board):
-	return sum([len(filter(lambda x: x != 0, r)) for r in board])
+# def cal(board):
+# 	return sum([len(filter(lambda x: x != 0, r)) for r in board])
 
-
+def cal(board, lead):
+	return sum([math.log(board[x][y],2)*ref[x][y] for x in range(0,size) for y in range(0,size)])
 
 class Game(object):
 	"""docstring for Game"""
@@ -74,7 +82,7 @@ class Game(object):
 		o = [r[:] for r in self.board]
 		l,r,u,d = swipeLeft(o),swipeRight(o),swipeUp(o),swipeDown(o)
 		if o == l == r == u == d: return 'e' 
-		lc,rc,uc,dc = cal(l),cal(r),cal(u),cal(d)
+		lc,rc,uc,dc = cal(l,self.maxnumber),cal(r,self.maxnumber),cal(u,self.maxnumber),cal(d,self.maxnumber)
 		minC = min(lc,rc,uc,dc)
 		if minC == lc: return 'a'
 		if minC == rc: return 'd'
