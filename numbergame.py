@@ -5,10 +5,10 @@ import heapq
 
 size = 4
 ref = [
-    [1, 3, 3, 1],
-    [3, 5, 5, 3],
-    [3, 5, 5, 3],
-    [1, 3, 3, 1],
+    [1, 2, 2, 1],
+    [2, 3, 3, 2],
+    [2, 3, 3, 2],
+    [1, 2, 2, 1],
 ]
 
 def swipeUp(board):
@@ -47,10 +47,16 @@ def transform(board):
 	return res
 
 def cal1(board):
-	return sum([len(filter(lambda x: x != 0, r)) for r in board])
+	return sum([len(filter(lambda x: x != 0, r)) for r in board])/2
 
-def cal2(board, lead):
-	return sum([math.log(board[x][y],2)*ref[x][y] for x in range(0,size) for y in range(0,size) if board[x][y]])
+def cal2(board,o):
+	return sum([-1 for x in range(size) for y in range(size) if board[x][y] != o[x][y]])
+
+def cal4(board):
+	return sum([math.log(board[x][y],2)**2*(-1) for x in range(size) for y in range(size) if board[x][y] != 0])/2
+
+def cal3(board):
+	return sum([math.log(board[x][y],2)*ref[x][y] for x in range(0,size) for y in range(0,size) if board[x][y] != 0])/3
 
 class Game(object):
 	"""docstring for Game"""
@@ -72,17 +78,19 @@ class Game(object):
 		self.maxnumber = max([self.board[x][y] for x in range(0,size) for y in range(0,size)])
 
 	def think(self):
-		lead, h, choice = self.maxnumber, [], ['a','d','w','s']
-		o = [r[:] for r in self.board]
+		h, choice = [], ['a','d','w','s']
+		o = self.board
 		l,r,u,d = swipeLeft(o),swipeRight(o),swipeUp(o),swipeDown(o)
 		if o == l == r == u == d: return 'e' 
-		for i,v in enumerate((l,r,u,d)):
-			heapq.heappush(h,((cal1(v), cal2(v,lead)),i))
-		return choice[heapq.heappop(h)[1]]
+		if l != o: heapq.heappush(h,((cal1(l),cal2(l,o),cal3(l)),'a'))
+		if r != o: heapq.heappush(h,((cal1(r),cal2(r,o),cal3(r)),'d'))
+		if u != o: heapq.heappush(h,((cal1(u),cal2(u,o),cal3(u)),'w'))
+		if d != o: heapq.heappush(h,((cal1(d),cal2(d,o),cal3(d)),'s'))
+		return heapq.heappop(h)[1]
 
 	def random(self):
 		possible = [(x,y) for x in range(0,size) for y in range(0,size) if self.board[x][y] == 0]
-		return possible[random.randrange(0,len(possible))] + (random.choice([2,2,2,4]),) 
+		return possible[random.randrange(0,len(possible))] + (random.choice([2,2,2,2,4]),) 
 
 	def __str__(self):
 		s = '====>>>> step {0} - {1} <<<<====\n'.format(self.step, self.move)
