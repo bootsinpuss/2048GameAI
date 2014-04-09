@@ -1,13 +1,14 @@
 import sys
 import random
 import math
+import heapq
 
 size = 4
 ref = [
-    [1, 2, 2, 1],
-    [2, 3, 3, 2],
-    [2, 3, 3, 2],
-    [1, 2, 2, 1],
+    [1, 3, 3, 1],
+    [3, 5, 5, 3],
+    [3, 5, 5, 3],
+    [1, 3, 3, 1],
 ]
 
 def swipeUp(board):
@@ -45,11 +46,11 @@ def transform(board):
 		res.append(sub)
 	return res
 
-# def cal(board):
-# 	return sum([len(filter(lambda x: x != 0, r)) for r in board])
+def cal1(board):
+	return sum([len(filter(lambda x: x != 0, r)) for r in board])
 
-def cal(board, lead):
-	return sum([math.log(board[x][y],2)*ref[x][y] for x in range(0,size) for y in range(0,size)])
+def cal2(board, lead):
+	return sum([math.log(board[x][y],2)*ref[x][y] for x in range(0,size) for y in range(0,size) if board[x][y]])
 
 class Game(object):
 	"""docstring for Game"""
@@ -70,25 +71,14 @@ class Game(object):
 			self.step -= 1
 		self.maxnumber = max([self.board[x][y] for x in range(0,size) for y in range(0,size)])
 
-	# def think(self):
-	# 	o = [r[:] for r in self.board] 
-	# 	l,r,u,d = swipeLeft(o),swipeRight(o),swipeUp(o),swipeDown(o)
-	# 	if o == l == r == u == d: return 'e'
-	# 	if l != o: return 'a'
-	# 	if u != o: return 'w'
-	# 	return 's' if cal(d) < cal(r) else 'd'
-
 	def think(self):
+		lead, h, choice = self.maxnumber, [], ['a','d','w','s']
 		o = [r[:] for r in self.board]
 		l,r,u,d = swipeLeft(o),swipeRight(o),swipeUp(o),swipeDown(o)
 		if o == l == r == u == d: return 'e' 
-		lc,rc,uc,dc = cal(l,self.maxnumber),cal(r,self.maxnumber),cal(u,self.maxnumber),cal(d,self.maxnumber)
-		minC = min(lc,rc,uc,dc)
-		if minC == lc: return 'a'
-		if minC == rc: return 'd'
-		if minC == uc: return 'w'
-		if minC == dc: return 's'
-
+		for i,v in enumerate((l,r,u,d)):
+			heapq.heappush(h,((cal1(v), cal2(v,lead)),i))
+		return choice[heapq.heappop(h)[1]]
 
 	def random(self):
 		possible = [(x,y) for x in range(0,size) for y in range(0,size) if self.board[x][y] == 0]
@@ -107,11 +97,11 @@ class Game(object):
 
 
 def playGame(game, cmd):
-	if len(cmd) != 2 or (cmd[1] != '-auto' and cmd[1] != '-manual'):
+	if cmd != '-auto' and cmd != '-manual':
 		print 'Wrong Command ! -auto or -manual'
 		return
 	f = open('gameResult','w')
-	mode = sys.argv[1] == '-auto'
+	mode = cmd == '-auto'
 	if mode: f.write(str(game) + '\n')
 	else: print game
 	while True:
@@ -139,6 +129,8 @@ if __name__ == '__main__':
 	    [0, 4, 0, 4],
 	    [0, 2, 2, 0],
 	]
-	game = Game(matrix)
-	playGame(game, sys.argv)
+	times, cmd = int(sys.argv[2]), sys.argv[1]
+	for i in range(times):
+		game = Game(matrix) 
+		playGame(game, cmd)
 
