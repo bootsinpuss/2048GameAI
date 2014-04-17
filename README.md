@@ -3,7 +3,7 @@
 
 Play around python by making an AI game player for the popular 2048 game in iPhone
 
-Currently AI very poor performance - can only get to 256 sometimes :)
+Currently poor AI performance - Usually 256, sometimes 512, rarely 1024
 
 How to run in terminal:
 
